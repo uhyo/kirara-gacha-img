@@ -26,6 +26,10 @@ module.exports = {
         loader: 'source-map-loader',
         enforce: 'pre',
       },
+      {
+        test: /\.css$/,
+        loaders: ['style-loader', 'css-loader?modules'],
+      },
     ],
   },
   plugins,

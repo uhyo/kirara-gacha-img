@@ -3,6 +3,8 @@ import {
     h,
 } from 'preact';
 
+import './css/app.css';
+
 import {
     FileSelect,
 } from './file-select';
@@ -13,7 +15,7 @@ import {
 import {
     IIconImage,
     main,
-} from './logic/main';
+} from '../logic/main';
 
 type State = 'initial' | 'processing' | 'result';
 

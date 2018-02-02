@@ -19,6 +19,16 @@ const BUNDLE_NAME = "bundle.js";
 const PRODUCTION = process.env.NODE_ENV === 'production';
 
 {
+  gulp.task('css', ()=>{
+    return gulp.src(path.join(LIB_DIR, '**', '*.css'))
+    .pipe(gulpChanged(TS_DIST_LIB))
+    .pipe(gulp.dest(TS_DIST_LIB));
+  });
+  gulp.task('watch-css', ()=>{
+    gulp.watch(path.join(LIB_DIR, '**', '*.css'), ['css']);
+  });
+}
+{
   const tsProj = gulpTS.createProject('tsconfig.json', {
     typescript,
   });
@@ -95,7 +105,7 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
   gulp.task('bundle-main', ()=>{
     return runWebpack(false);
   });
-  gulp.task('bundle', ['tsc'], ()=>{
+  gulp.task('bundle', ['css', 'tsc'], ()=>{
     return runWebpack(false);
   });
   gulp.task('watch-bundle', ()=>{
@@ -111,5 +121,5 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
     return del(del_target);
   });
 }
-gulp.task('default', ['tsc', 'tslint', 'bundle']);
-gulp.task('watch', ['watch-tsc', 'watch-tslint', 'watch-bundle']);
+gulp.task('default', ['css', 'tsc', 'tslint', 'bundle']);
+gulp.task('watch', ['watch-css', 'watch-tsc', 'watch-tslint', 'watch-bundle']);

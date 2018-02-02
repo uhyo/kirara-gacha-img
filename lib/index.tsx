@@ -5,7 +5,7 @@ import {
 
 import {
     App,
-} from './app';
+} from './components/app';
 
 document.addEventListener('DOMContentLoaded', ()=>{
     const app = document.getElementById('app');

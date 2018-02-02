@@ -1,0 +1,11 @@
+.wrapper {
+  width: 100%;
+  flex: auto 1 0;
+
+  background-color: #aad7ff;
+}
+
+img.icon {
+  display: inline-block;
+  margin: 12px;
+}

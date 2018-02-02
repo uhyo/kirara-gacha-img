@@ -3,7 +3,11 @@ import {
     h,
 } from 'preact';
 
+import style from './css/file-select.css';
+import tileStyle from './css/tile.css';
+
 export interface IPropFileSelect {
+    disabled?: boolean;
     label: string;
     onSelect(files: FileList): void;
 }
@@ -14,10 +18,14 @@ export interface IPropFileSelect {
 export class FileSelect extends Component<IPropFileSelect, {}> {
     public render() {
         const {
+            disabled,
             label,
         } = this.props;
 
-        return <button onClick={this.handleClick.bind(this)}>
+        return <button
+            className={tileStyle.tile + ' ' + style.button}
+            disabled={disabled}
+            onClick={this.handleClick.bind(this)}>
             {label}
         </button>;
     }

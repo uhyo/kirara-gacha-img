@@ -1,0 +1,16 @@
+.tile {
+  /*
+  width: -webkit-fill-available;
+  width: -moz-available;
+  width: available;
+  */
+  width: stretch;
+
+  font-size: 20px;
+  display: inline-block;
+  border: none;
+  font-weight: bold;
+  text-align: center;
+  margin: 14px;
+  padding: 10px;
+}

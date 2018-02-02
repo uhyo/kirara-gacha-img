@@ -68,16 +68,25 @@ export class App extends Component<{}, IStateApp> {
                 }
             }
         };
-        return <div>
-            <p>
+        let tile;
+        if (state === 'processing') {
+            tile =
+                <Progress
+                    value={progress}
+                    label='処理中…'
+                    />;
+        } else {
+            tile =
                 <FileSelect
-                    label='ガチャ画像を選択'
+                    label={state === 'result' ? 'もう1度ガチャ画像を選択' : 'ガチャ画像を選択'}
                     onSelect={fileHandler}
-                />
-            </p>
+                />;
+        }
+        return <div>
+            <div>
+                {tile}
+            </div>
             {
-                state === 'processing' ?
-                    <Progress value={progress} label={`処理中… ${(100*progress).toFixed(0)}%`} /> :
                 state === 'result' ?
                     <ImageShow icons={icons} /> :
                     null

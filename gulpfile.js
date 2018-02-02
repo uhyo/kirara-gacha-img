@@ -61,6 +61,8 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
         entry: path.join(__dirname, TS_DIST_LIB, 'index.js'),
         output: {
           path: path.join(__dirname, DIST_LIB),
+          // XXX
+          publicPath: '/dist/',
           filename: BUNDLE_NAME,
         },
       }

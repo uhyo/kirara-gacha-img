@@ -13,10 +13,12 @@
     "removeComments": false,
     "sourceMap": false,
     "target": "es2015",
+    "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": true,
     "strict": true
   },
   "include": [
-    "lib/**/*.ts"
+    "lib/**/*.ts",
+    "lib/**/*.tsx"
   ]
 }

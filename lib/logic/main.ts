@@ -24,6 +24,7 @@ let id = 1;
 export async function main(files: FileList): Promise<IIconImage[]> {
     // Convert to an array.
     const filelist = Array.from(files);
+    console.log('filelist', filelist);
     filelist.sort((a, b)=> a.lastModified - b.lastModified);
     // render all images.
     const renderResults =

@@ -48,12 +48,13 @@ ctx.onmessage = (e)=> {
             const green = data[idx+1];
             const blue = data[idx+2];
 
-            if (red === bg.red && green === bg.green && blue === bg.blue) {
+            if (isBG(red, green, blue)) {
                 // this is bg!
                 bgcnt++;
             }
             idx += 4;
         }
+        console.log(bgcnt);
         // State transition
         switch (s) {
             case State.Start: {
@@ -144,6 +145,16 @@ ctx.onmessage = (e)=> {
 };
 
 /**
+ * Check whether this color is BG.
+ */
+function isBG(red: number, green: number, blue: number): boolean {
+    const diff = Math.abs(red - bg.red) + Math.abs(green - bg.green) + Math.abs(blue - bg.blue);
+
+    // Firefox has weird rendering!
+    return diff < 10;
+}
+
+/**
  * Detect each box of gacha icon.
  */
 function detectX(data: Uint8ClampedArray, width: number, max: number): [number[], number] {
@@ -159,7 +170,7 @@ function detectX(data: Uint8ClampedArray, width: number, max: number): [number[]
         const red = data[idx];
         const green = data[idx+1];
         const blue = data[idx+2];
-        const bgf = red === bg.red && green === bg.green && blue === bg.blue;
+        const bgf = isBG(red, green, blue);
 
         if (bgf) {
             // count continues background pixels.

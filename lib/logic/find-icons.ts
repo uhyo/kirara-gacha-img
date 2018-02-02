@@ -17,40 +17,52 @@ export interface IWorkerResult {
     result: IIcon[];
 }
 
-/**
- * Find icons from an image.
- */
-export function findIcons(image: HTMLImageElement): Promise<IFindIconsResult> {
-    // Invoke a worker.
-    const worker = new FindIconWorker();
+export class IconFinder {
+    protected worker = new FindIconWorker();
 
-    // Render image into a canvas.
-    const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    if (ctx == null) {
-        throw new Error('Could not get a context');
+    /**
+     * Find icons from an image.
+     */
+    public run(image: HTMLImageElement): Promise<IFindIconsResult> {
+        // Render image into a canvas.
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx == null) {
+            throw new Error('Could not get a context');
+        }
+        ctx.drawImage(image, 0, 0);
+        // Retrieve an ImageData.
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        // Send this data to the worker.
+        this.worker.postMessage(data, [data.data.buffer]);
+
+        return new Promise((resolve, reject)=>{
+            this.worker.onmessage = (e)=> {
+                // tslint:disable-next-line:no-empty
+                const noop = ()=> {};
+                this.worker.onmessage = noop;
+                this.worker.onerror = noop;
+                const answer: IWorkerResult = e.data;
+                const {
+                    result,
+                } = answer;
+
+                resolve({
+                    image: canvas,
+                    result,
+                });
+            };
+            this.worker.onerror = reject;
+        });
     }
-    ctx.drawImage(image, 0, 0);
-    // Retrieve an ImageData.
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    // Send this data to the worker.
-    worker.postMessage(data, [data.data.buffer]);
-
-    return new Promise((resolve, reject)=>{
-        worker.onmessage = (e)=> {
-            const answer: IWorkerResult = e.data;
-            const {
-                result,
-            } = answer;
-
-            resolve({
-                image: canvas,
-                result,
-            });
-        };
-        worker.onerror = reject;
-    });
+    /**
+     * Terminate our worker.
+     */
+    public terminate(): void {
+        this.worker.postMessage('end');
+    }
 }

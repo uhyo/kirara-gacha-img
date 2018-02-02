@@ -9,7 +9,7 @@ import {
     extractIcon,
 } from './extract-icon';
 import {
-    findIcons,
+    IconFinder,
     IIcon,
 } from './find-icons';
 
@@ -48,12 +48,14 @@ export function main(files: FileList): EventStream<IProgress> {
         // remove nulls.
         const images = renderResults.filter((img)=> img != null) as HTMLImageElement[];
 
+        const finder = new IconFinder();
+
         const result: IIconImage[] = [];
         let count = 0;
 
         // find gacha icons.
         for (const image of images) {
-            const obj = await findIcons(image);
+            const obj = await finder.run(image);
             count++;
             console.log('res!', count);
             if (count < images.length) {
@@ -78,6 +80,7 @@ export function main(files: FileList): EventStream<IProgress> {
             result,
             type: 'result',
         });
+        finder.terminate();
         end();
     });
 }

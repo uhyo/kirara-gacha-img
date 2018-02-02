@@ -46,8 +46,8 @@ export class App extends Component<{}, IStateApp> {
 
         const fileHandler = async (files: FileList)=>{
             this.setState({
-                state: 'processing',
                 progress: 0,
+                state: 'processing',
             });
             const stream = main(files);
             for await (const obj of stream) {

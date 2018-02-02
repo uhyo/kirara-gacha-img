@@ -23,6 +23,10 @@ const enum State {
 }
 
 ctx.onmessage = (e)=> {
+    if (e.data === 'end') {
+        close();
+        return;
+    }
     // Receive an ImageData.
     const {
         data,
@@ -141,7 +145,6 @@ ctx.onmessage = (e)=> {
     };
 
     ctx.postMessage(answer, [data.buffer]);
-    close();
 };
 
 /**

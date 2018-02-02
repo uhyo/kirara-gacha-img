@@ -19,6 +19,7 @@ const enum State {
     UpBorder,
     Gacha10_1,
     CenterMargin,
+    Gacha1,
 }
 
 ctx.onmessage = (e)=> {
@@ -73,6 +74,13 @@ ctx.onmessage = (e)=> {
                     // Get start position of each boxes.
                     const linestart = 4 * width * (y+10);
                     [xs, sizex] = detectX(data.subarray(linestart, linestart + 4 * width), width, 5);
+                } else if (bgcnt <= 640) {
+                    // Found a 1 gacha.
+                    y1 = y - 1;
+                    s = State.Gacha1;
+
+                    const linestart = 4 * width * (y+10);
+                    [xs, sizex] = detectX(data.subarray(linestart, linestart + 4 * width), width, 1);
                 }
                 break;
             }
@@ -89,6 +97,13 @@ ctx.onmessage = (e)=> {
                     // Start of second line.
                     y2 = y - 1;
                     // Job is done!
+                    break wholeloop;
+                }
+                break;
+            }
+            case State.Gacha1: {
+                if (bgcnt >= 650) {
+                    sizey = y - y1!;
                     break wholeloop;
                 }
                 break;

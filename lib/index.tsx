@@ -3,6 +3,8 @@ import {
     render,
 } from 'preact';
 
+import './polyfill';
+
 import {
     App,
 } from './components/app';

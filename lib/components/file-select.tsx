@@ -48,12 +48,6 @@ export class FileSelect extends Component<IPropFileSelect, {}> {
 
         document.body.appendChild(input);
 
-        setTimeout(()=>{
-            input.click();
-            setTimeout(()=>{
-                document.body.removeChild(input);
-            }, 500);
-        }, 0);
-
+        input.click();
     }
 }

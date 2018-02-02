@@ -54,7 +54,6 @@ ctx.onmessage = (e)=> {
             }
             idx += 4;
         }
-        console.log(bgcnt);
         // State transition
         switch (s) {
             case State.Start: {
@@ -162,7 +161,6 @@ function detectX(data: Uint8ClampedArray, width: number, max: number): [number[]
         const blue = data[idx+2];
         const bgf = red === bg.red && green === bg.green && blue === bg.blue;
 
-        console.log(bgf, bgcont);
         if (bgf) {
             // count continues background pixels.
             bgcont++;
@@ -175,7 +173,6 @@ function detectX(data: Uint8ClampedArray, width: number, max: number): [number[]
             if (bgcont >= 12) {
                 // yes, it's after a true background region
                 if (result.length < max) {
-                    console.log('found!', x, state);
                     result.push(x);
                 }
                 if (state === 0) {

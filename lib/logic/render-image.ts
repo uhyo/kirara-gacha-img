@@ -9,7 +9,6 @@ export function renderImage(file: File): Promise<HTMLImageElement | null> {
 
     return new Promise((resolve, reject)=>{
         img.addEventListener('load', ()=>{
-            console.log(img.naturalWidth, img.naturalHeight);
             resolve(img);
         });
         img.addEventListener('error', (err)=>{

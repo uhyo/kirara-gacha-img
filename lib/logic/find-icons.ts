@@ -45,7 +45,7 @@ export function findIcons(image: HTMLImageElement): Promise<IFindIconsResult> {
             const {
                 result,
             } = answer;
-            console.log(result);
+
             resolve({
                 image: canvas,
                 result,

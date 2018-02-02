@@ -3,12 +3,27 @@ import {
 } from './render-image';
 
 import {
+    EventStream,
+} from './event-stream';
+import {
     extractIcon,
 } from './extract-icon';
 import {
     findIcons,
     IIcon,
 } from './find-icons';
+
+/**
+ * Event for any progress.
+ */
+export type IProgress = {
+    type: 'progress';
+    current: number;
+    max: number;
+} | {
+    type: 'result';
+    result: IIconImage[];
+};
 
 export interface IIconImage extends IIcon {
     id: number;
@@ -21,35 +36,48 @@ let id = 1;
 /**
  * The main logic.
  */
-export async function main(files: FileList): Promise<IIconImage[]> {
-    // Convert to an array.
-    const filelist = Array.from(files);
-    console.log('filelist', filelist);
-    filelist.sort((a, b)=> a.lastModified - b.lastModified);
-    // render all images.
-    const renderResults =
-        await Promise.all(
-            filelist.map((file)=> renderImage(file)));
-    // remove nulls.
-    const images = renderResults.filter((img)=> img != null) as HTMLImageElement[];
+export function main(files: FileList): EventStream<IProgress> {
+    return new EventStream(async (emit, end, error)=> {
+        // Convert to an array.
+        const filelist = Array.from(files);
+        filelist.sort((a, b)=> a.lastModified - b.lastModified);
+        // render all images.
+        const renderResults =
+            await Promise.all(
+                filelist.map((file)=> renderImage(file)));
+        // remove nulls.
+        const images = renderResults.filter((img)=> img != null) as HTMLImageElement[];
 
-    // find gacha icons.
-    const icons =
-        await Promise.all(
-            images.map((image)=> findIcons(image)));
+        const result: IIconImage[] = [];
+        let count = 0;
 
-    // Give then ID.
-    const result = [];
-    for (const obj of icons) {
-        const canvas = obj.image;
-        for (const box of obj.result) {
-            const url = await extractIcon(canvas, box);
-            result.push({
-                url,
-                ...box,
-                id: id++,
-            });
+        // find gacha icons.
+        for (const image of images) {
+            const obj = await findIcons(image);
+            count++;
+            console.log('res!', count);
+            if (count < images.length) {
+                // not full!
+                emit({
+                    current: count,
+                    max: images.length,
+                    type: 'progress',
+                });
+            }
+            for (const box of obj.result) {
+                const url = await extractIcon(obj.image, box);
+                result.push({
+                    url,
+                    ...box,
+                    id: id++,
+                });
+            }
         }
-    }
-    return result;
+        // full!
+        emit({
+            result,
+            type: 'result',
+        });
+        end();
+    });
 }

@@ -54,7 +54,6 @@ ctx.onmessage = (e)=> {
             }
             idx += 4;
         }
-        console.log(bgcnt);
         // State transition
         switch (s) {
             case State.Start: {
@@ -142,6 +141,7 @@ ctx.onmessage = (e)=> {
     };
 
     ctx.postMessage(answer, [data.buffer]);
+    close();
 };
 
 /**

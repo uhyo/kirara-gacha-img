@@ -11,6 +11,9 @@ import {
 import {
     ImageShow,
 } from './image-show';
+import {
+    Progress,
+} from './progress';
 
 import {
     IIconImage,
@@ -21,6 +24,7 @@ type State = 'initial' | 'processing' | 'result';
 
 interface IStateApp {
     state: State;
+    progress: number;
     icons: IIconImage[];
 }
 
@@ -29,24 +33,40 @@ export class App extends Component<{}, IStateApp> {
         super(props);
         this.state = {
             icons: [],
+            progress: 0,
             state: 'initial',
         };
     }
     public render() {
         const {
-            state,
             icons,
+            progress,
+            state,
         } = this.state;
 
         const fileHandler = async (files: FileList)=>{
             this.setState({
                 state: 'processing',
+                progress: 0,
             });
-            const iconobjs = await main(files);
-            this.setState({
-                icons: iconobjs,
-                state: 'result',
-            });
+            const stream = main(files);
+            for await (const obj of stream) {
+                console.log(obj);
+                if (obj == null) {
+                    continue;
+                }
+                if (obj.type === 'progress') {
+                    this.setState({
+                        progress: obj.current / obj.max,
+                        state: 'processing',
+                    });
+                } else if (obj.type === 'result') {
+                    this.setState({
+                        icons: obj.result,
+                        state: 'result',
+                    });
+                }
+            }
         };
         return <div>
             <p>
@@ -56,6 +76,8 @@ export class App extends Component<{}, IStateApp> {
                 />
             </p>
             {
+                state === 'processing' ?
+                    <Progress value={progress} label={`処理中… ${(100*progress).toFixed(0)}%`} /> :
                 state === 'result' ?
                     <ImageShow icons={icons} /> :
                     null

@@ -20,20 +20,20 @@ export class ZoomSlider extends Component<IPropZoomSlider, {}> {
         /**
          * Log scale
          */
-        const v = Math.ceil(Math.log2(zoom));
+        const v = Math.round(Math.log2(zoom)*2);
 
         return <div>
             <input
                 type='range'
                 className={style.slider}
                 step={1}
-                min={-2}
-                max={2}
+                min={-4}
+                max={4}
                 value={String(v)}
                 onInput={(e)=>{
                     if (onChange != null) {
                         const val = Number((e.currentTarget as HTMLInputElement).value);
-                        onChange(2 ** val);
+                        onChange(2 ** (val/2));
                     }
                 }}
             />

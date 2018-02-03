@@ -111,7 +111,9 @@ export class App extends Component<{}, IStateApp> {
             {zoomtile}
             {
                 state === 'result' ?
+                (icons.length > 0 ?
                     <ImageShow icons={icons} zoom={zoom} /> :
+                    <p>ガチャ結果の画像が見つかりませんでした。</p>) :
                     null
             }
         </div>;

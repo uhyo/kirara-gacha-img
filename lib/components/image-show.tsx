@@ -7,6 +7,9 @@ import {
 import {
     IIconImage,
 } from '../logic/main';
+import {
+    position,
+} from '../logic/positioning';
 
 import {
     screen,
@@ -26,15 +29,33 @@ interface IPropImageShowInner extends IPropImageShow {
 class ImageShowInner extends Component<IPropImageShowInner, {}> {
     public render() {
         const {
+            width,
             icons,
             zoom,
         } = this.props;
 
-        return (<div className={style.wrapper}>{
+        // get maximum of icons.
+        const sizex = Math.max(... icons.map((box)=> box.width)) * zoom;
+        const padding = sizex * 0.05 * zoom;
+
+        const {
+            start,
+        } = position({
+            padding,
+            sizex,
+            width,
+        });
+
+        const adhocStyle = {
+            paddingLeft: `${start}px`,
+            paddingRight: `${start}px`,
+        };
+
+        return (<div className={style.wrapper} style={adhocStyle}>{
             icons.map((box)=> {
                 const margin = (box.height * 0.1 * zoom).toFixed(1);
                 const styleobj = {
-                    margin: `${margin}px`,
+                    margin: `${padding}px`,
                 };
 
                 return (<img

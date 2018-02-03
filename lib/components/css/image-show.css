@@ -4,8 +4,12 @@
 
   background-color: #aad7ff;
   padding-top: 30px;
+
+  display: flex;
+  flex-flow: row wrap;
+  align-content: flex-start;
 }
 
 img.icon {
-  display: inline-block;
+  flex: auto 0 0;
 }

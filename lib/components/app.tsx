@@ -18,6 +18,9 @@ import {
     SaveImage,
 } from './save-image';
 import {
+    Warning,
+} from './warning';
+import {
     ZoomSlider,
 } from './zoom-slider';
 
@@ -42,6 +45,7 @@ interface IStateApp {
     progress: number;
     saveLink: string | null;
     state: State;
+    warning: boolean;
     zoom: number;
 }
 
@@ -57,6 +61,7 @@ export class App extends Component<{}, IStateApp> {
             progress: 0,
             saveLink: null,
             state: 'initial',
+            warning: true,
             zoom,
         };
     }
@@ -66,6 +71,7 @@ export class App extends Component<{}, IStateApp> {
             progress,
             saveLink,
             state,
+            warning,
             zoom,
         } = this.state;
 
@@ -98,7 +104,6 @@ export class App extends Component<{}, IStateApp> {
                 state: 'saving',
             });
             for await (const obj of stream) {
-                console.log(obj);
                 if (obj == null) {
                     continue;
                 }
@@ -124,6 +129,11 @@ export class App extends Component<{}, IStateApp> {
                 }
             }
         };
+        const warningClose = ()=> {
+            this.setState({
+                warning: false,
+            });
+        };
         let zoomtile;
         if (state === 'result' || state === 'saving') {
             const zoomChange = (v: number)=> {
@@ -137,6 +147,9 @@ export class App extends Component<{}, IStateApp> {
                 />);
         }
         return <div>
+            {warning ?
+                <Warning onClose={warningClose} /> :
+                null}
             {state === 'processing' || state === 'saving' ?
                 <Progress
                     value={progress}

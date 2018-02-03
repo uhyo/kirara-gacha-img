@@ -14,6 +14,9 @@ import {
 import {
     Progress,
 } from './progress';
+import {
+    ZoomSlider,
+} from './zoom-slider';
 
 import {
     IIconImage,
@@ -23,9 +26,10 @@ import {
 type State = 'initial' | 'processing' | 'result';
 
 interface IStateApp {
-    state: State;
-    progress: number;
     icons: IIconImage[];
+    progress: number;
+    state: State;
+    zoom: number;
 }
 
 export class App extends Component<{}, IStateApp> {
@@ -35,6 +39,7 @@ export class App extends Component<{}, IStateApp> {
             icons: [],
             progress: 0,
             state: 'initial',
+            zoom: 1,
         };
     }
     public render() {
@@ -42,6 +47,7 @@ export class App extends Component<{}, IStateApp> {
             icons,
             progress,
             state,
+            zoom,
         } = this.state;
 
         const fileHandler = async (files: FileList)=>{
@@ -71,24 +77,37 @@ export class App extends Component<{}, IStateApp> {
         let tile;
         if (state === 'processing') {
             tile =
-                <Progress
+                (<Progress
                     value={progress}
                     label='処理中…'
-                    />;
+                    />) ;
         } else {
             tile =
-                <FileSelect
+                (<FileSelect
                     label={state === 'result' ? 'もう1度ガチャ画像を選択' : 'ガチャ画像を選択'}
                     onSelect={fileHandler}
-                />;
+                />);
+        }
+        let zoomtile;
+        if (state === 'result') {
+            const zoomChange = (v: number)=> {
+                this.setState({
+                    zoom: v,
+                });
+            };
+            zoomtile = (<ZoomSlider
+                zoom={zoom}
+                onChange={zoomChange}
+                />);
         }
         return <div>
             <div>
                 {tile}
             </div>
+            {zoomtile}
             {
                 state === 'result' ?
-                    <ImageShow icons={icons} /> :
+                    <ImageShow icons={icons} zoom={zoom} /> :
                     null
             }
         </div>;

@@ -3,9 +3,9 @@
   flex: auto 1 0;
 
   background-color: #aad7ff;
+  padding-top: 30px;
 }
 
 img.icon {
   display: inline-block;
-  margin: 12px;
 }

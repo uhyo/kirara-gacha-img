@@ -57,7 +57,6 @@ export function main(files: FileList): EventStream<IProgress> {
         for (const image of images) {
             const obj = await finder.run(image);
             count++;
-            console.log('res!', count);
             if (count < images.length) {
                 // not full!
                 emit({

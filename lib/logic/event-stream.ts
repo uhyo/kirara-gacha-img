@@ -80,12 +80,6 @@ export class EventStream<T> implements AsyncIterableIterator<T | undefined> {
         if (this.err != null) {
             return Promise.reject(this.err);
         }
-        if (this.done) {
-            return Promise.resolve({
-                done: true,
-                value: undefined,
-            });
-        }
         if (this.queue.length > 0) {
             const value = this.queue.pop()!;
             return Promise.resolve({
@@ -93,7 +87,14 @@ export class EventStream<T> implements AsyncIterableIterator<T | undefined> {
                 value,
             });
         }
+        if (this.done) {
+            return Promise.resolve({
+                done: true,
+                value: undefined,
+            });
+        }
         if (this.waiting != null) {
+            console.warn('hi');
             return Promise.reject(new Error('duplicate next() call'));
         }
         return new Promise((resolve, reject)=> {

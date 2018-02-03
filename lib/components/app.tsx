@@ -3,7 +3,7 @@ import {
     h,
 } from 'preact';
 
-import './css/app.css';
+import style from './css/app.css';
 
 import {
     FileSelect,
@@ -15,19 +15,32 @@ import {
     Progress,
 } from './progress';
 import {
+    SaveImage,
+} from './save-image';
+import {
     ZoomSlider,
 } from './zoom-slider';
 
 import {
+    download,
+} from '../logic/download';
+import {
+    EventStream,
+} from '../logic/event-stream';
+import {
     IIconImage,
     main,
 } from '../logic/main';
+import {
+    IPackProgress,
+} from '../logic/pack-image';
 
-type State = 'initial' | 'processing' | 'result';
+type State = 'initial' | 'processing' | 'result' | 'saving';
 
 interface IStateApp {
     icons: IIconImage[];
     progress: number;
+    saveLink: string | null;
     state: State;
     zoom: number;
 }
@@ -42,6 +55,7 @@ export class App extends Component<{}, IStateApp> {
         this.state = {
             icons: [],
             progress: 0,
+            saveLink: null,
             state: 'initial',
             zoom,
         };
@@ -50,6 +64,7 @@ export class App extends Component<{}, IStateApp> {
         const {
             icons,
             progress,
+            saveLink,
             state,
             zoom,
         } = this.state;
@@ -61,7 +76,6 @@ export class App extends Component<{}, IStateApp> {
             });
             const stream = main(files);
             for await (const obj of stream) {
-                console.log(obj);
                 if (obj == null) {
                     continue;
                 }
@@ -78,22 +92,40 @@ export class App extends Component<{}, IStateApp> {
                 }
             }
         };
-        let tile;
-        if (state === 'processing') {
-            tile =
-                (<Progress
-                    value={progress}
-                    label='処理中…'
-                    />) ;
-        } else {
-            tile =
-                (<FileSelect
-                    label={state === 'result' ? 'もう1度ガチャ画像を選択' : 'ガチャ画像を選択'}
-                    onSelect={fileHandler}
-                />);
-        }
+        const saveHandler = async (stream: EventStream<IPackProgress>)=> {
+            this.setState({
+                progress: 0,
+                state: 'saving',
+            });
+            for await (const obj of stream) {
+                console.log(obj);
+                if (obj == null) {
+                    continue;
+                }
+                if (obj.type === 'progress') {
+                    this.setState({
+                        progress: obj.current / obj.max,
+                        state: 'saving',
+                    });
+                } else if (obj.type === 'end') {
+                    // download it.
+                    const url = await download(obj.canvas);
+                    if (url != null) {
+                        this.setState({
+                            saveLink: url,
+                            state: 'result',
+                        });
+                    } else {
+                        this.setState({
+                            saveLink: null,
+                            state: 'result',
+                        });
+                    }
+                }
+            }
+        };
         let zoomtile;
-        if (state === 'result') {
+        if (state === 'result' || state === 'saving') {
             const zoomChange = (v: number)=> {
                 this.setState({
                     zoom: v,
@@ -105,12 +137,39 @@ export class App extends Component<{}, IStateApp> {
                 />);
         }
         return <div>
-            <div>
-                {tile}
+            {state === 'processing' || state === 'saving' ?
+                <Progress
+                    value={progress}
+                    label='処理中…'
+                /> :
+                null}
+            <div className={style.tiles}>
+                {state === 'initial' ?
+                    <FileSelect
+                        label='ガチャ画像を選択'
+                        onSelect={fileHandler}
+                    /> :
+                    state === 'result' ?
+                    <FileSelect
+                        label='もう1度ガチャ画像を選択'
+                        onSelect={fileHandler}
+                    /> :
+                    null}
+                {state === 'result' && icons.length > 0 ?
+                    <SaveImage
+                        icons={icons}
+                        zoom={zoom}
+                        onSaving={saveHandler}
+                    /> :
+                    null
+                }
             </div>
+            {saveLink != null ?
+                <p><a href={saveLink} target='_blank'>画像をダウンロード</a></p> :
+                null}
             {zoomtile}
             {
-                state === 'result' ?
+                state === 'result' || state === 'saving' ?
                 (icons.length > 0 ?
                     <ImageShow icons={icons} zoom={zoom} /> :
                     <p>ガチャ結果の画像が見つかりませんでした。</p>) :

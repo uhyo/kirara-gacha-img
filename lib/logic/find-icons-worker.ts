@@ -6,12 +6,9 @@ import {
 // TypeScript workaround
 const ctx: Worker = self as any;
 
-// background color of the gacha board.
-const bg = {
-    blue: 0xff,
-    green: 0xd7,
-    red: 0xaa,
-};
+import {
+    bg,
+} from './bg';
 
 // state of scanner.
 const enum State {

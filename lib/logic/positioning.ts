@@ -1,25 +1,44 @@
 // Positioning of tiles
+import {
+    IIconImage,
+} from './main';
 
 export interface IPositionInput {
     /**
-     * Padding between icons.
+     * icons
      */
-    padding: number;
-    /**
-     * Width of icons.
-     */
-    sizex: number;
+    icons: IIconImage[];
     /**
      * Width of available area.
      */
     width: number;
+    /**
+     * Zoom.
+     */
+    zoom: number;
 }
 
 export interface IPositionResult {
     /**
+     * Required height of area.
+     */
+    height: number;
+    /**
+     * Maximum width of icons.
+     */
+    maxwidth: number;
+    /**
+     * Maximum height of icons.
+     */
+    maxheight: number;
+    /**
      * Number of icons per line.
      */
     num: number;
+    /**
+     * Padding between icons.
+     */
+    padding: number;
     /**
      * Start x position of first icon.
      */
@@ -30,10 +49,18 @@ export interface IPositionResult {
  * Calculate a positioning of tiles.
  */
 export function position({
-    padding,
-    sizex,
+    icons,
     width,
+    zoom,
 }: IPositionInput): IPositionResult {
+    // number of icons.
+    const iconsnum = icons.length;
+    // maximum size of icons.
+    const sizex = Math.max(... icons.map((box)=> box.width)) * zoom;
+    const sizey = Math.max(... icons.map((box)=> box.height)) * zoom;
+    // define padding.
+    const padding = sizex * 0.05 * zoom;
+
     //    p[]pp[]pp[]p
     // num * sizex + 2 * num * padding <= width.
     // num * (sizex + 2 * padding) <= width.
@@ -45,8 +72,17 @@ export function position({
     // available width for margin.
     const margin = (width - areaw) / 2;
 
+    // number of lines.
+    const lines = Math.ceil(iconsnum / num);
+
+    const height = lines * (sizey + 2 * padding);
+
     return {
+        height,
+        maxheight: sizey,
+        maxwidth: sizex,
         num,
+        padding,
         start: margin,
     };
 }

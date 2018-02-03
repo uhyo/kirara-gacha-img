@@ -6,6 +6,10 @@ import {
 import style from './css/file-select.css';
 import tileStyle from './css/tile.css';
 
+import {
+    Button,
+} from './button';
+
 export interface IPropFileSelect {
     disabled?: boolean;
     label: string;
@@ -22,12 +26,12 @@ export class FileSelect extends Component<IPropFileSelect, {}> {
             label,
         } = this.props;
 
-        return <button
-            className={tileStyle.tile + ' ' + style.button}
-            disabled={disabled}
-            onClick={this.handleClick.bind(this)}>
-            {label}
-        </button>;
+        return (
+            <Button
+                disabled={disabled}
+                onClick={this.handleClick.bind(this)}>
+                {label}
+            </Button>);
     }
     protected handleClick(): void {
         // File select button is clicked.

@@ -14,3 +14,14 @@
   margin: 14px;
   padding: 10px;
 }
+
+.button {
+  composes: tile;
+  appearance: none;
+  cursor: pointer;
+  background-color: #dddddd;
+}
+
+.button:disabled {
+  cursor: default;
+}

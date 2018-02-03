@@ -1,3 +1,8 @@
 * {
   box-sizing: border-box;
 }
+
+.tiles {
+  display: flex;
+  flex-flow: row nowrap;
+}

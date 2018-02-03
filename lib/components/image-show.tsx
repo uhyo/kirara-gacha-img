@@ -57,16 +57,13 @@ class ImageShowInner extends Component<IPropImageShowInner, {}> {
             zoom,
         } = this.props;
 
-        // get maximum of icons.
-        const sizex = Math.max(... icons.map((box)=> box.width)) * zoom;
-        const padding = sizex * 0.05 * zoom;
-
         const {
+            padding,
             start,
         } = position({
-            padding,
-            sizex,
+            icons,
             width,
+            zoom,
         });
 
         const adhocStyle = {

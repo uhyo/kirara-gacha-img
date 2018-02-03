@@ -42,6 +42,7 @@ export class FileSelect extends Component<IPropFileSelect, {}> {
         const input = document.createElement('input');
         input.type = 'file';
         input.multiple = true;
+        input.accept = 'image/*';
         input.style.display = 'none';
 
         input.addEventListener('change', ()=>{

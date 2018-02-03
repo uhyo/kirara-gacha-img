@@ -1,5 +1,7 @@
 import {
+    AnyComponent,
     Component,
+    ComponentConstructor,
     h,
 } from 'preact';
 
@@ -11,41 +13,54 @@ export interface IStateScreen {
 }
 /**
  * Screen: a wrapper with the size at least same as screen size.
- * provides a flex context.
+ * provides a scseen context.
  */
-export class Screen extends Component<{}, IStateScreen> {
-    protected elm: Element | undefined;
-    protected handler: (e: UIEvent)=>void;
-    constructor(props: {}) {
-        super(props);
+export function screen<P extends object, S>(c: AnyComponent<P & IStateScreen, S>):
+        ComponentConstructor<P, IStateScreen> {
+    const ret = class extends Component<P, IStateScreen> {
+        protected handler: (e: UIEvent)=>void;
 
-        this.state = {
-            height: document.documentElement.clientHeight + 20,
-            width: document.documentElement.clientWidth,
-        };
-        this.handler = (e: UIEvent)=> {
+        constructor(props?: P) {
+            super(props);
+            this.state = {
+                height: document.documentElement.clientHeight + 20,
+                width: document.documentElement.clientWidth,
+            };
+            this.handler = (e: UIEvent)=> {
+                this.setState({
+                    height: document.documentElement.clientHeight + 20,
+                    width: document.documentElement.clientWidth,
+                });
+            };
+        }
+        public render() {
+            const {
+                width,
+                height,
+            } = this.state;
+            const adhocStyle = {
+                minHeight: this.state.height,
+                width: this.state.width,
+            };
+            return (
+                <div className={style.screen} style={adhocStyle}>{
+                    h<P & IStateScreen>(c, {
+                        ... (this.props as object),
+                        height,
+                        width,
+                    } as P & IStateScreen)
+                }</div>);
+        }
+        public componentDidMount() {
             this.setState({
                 height: document.documentElement.clientHeight + 20,
                 width: document.documentElement.clientWidth,
             });
-        };
-    }
-    public render() {
-        return <div ref={(elm)=> this.elm = elm} className={style.screen} style={{
-            minHeight: this.state.height,
-            width: this.state.width,
-        }}>
-            {this.props.children}
-        </div>;
-    }
-    public componentDidMount() {
-        this.setState({
-            height: document.documentElement.clientHeight + 20,
-            width: document.documentElement.clientWidth,
-        });
-        window.addEventListener('resize', this.handler, false);
-    }
-    public componentWillUnmount() {
-        window.removeEventListener('resize', this.handler, false);
-    }
+            window.addEventListener('resize', this.handler, false);
+        }
+        public componentWillUnmount() {
+            window.removeEventListener('resize', this.handler, false);
+        }
+    };
+    return ret;
 }

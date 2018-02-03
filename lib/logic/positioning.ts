@@ -1,6 +1,5 @@
 // Positioning of tiles
 
-
 export interface IPositionInput {
     /**
      * Padding between icons.

@@ -5,6 +5,11 @@ import {
 } from 'preact';
 
 import {
+    exitFullscreen,
+    isFullscreen,
+    requestFullscreen,
+} from '../logic/fullscreen';
+import {
     IIconImage,
 } from '../logic/main';
 import {
@@ -27,6 +32,24 @@ interface IPropImageShowInner extends IPropImageShow {
 }
 
 class ImageShowInner extends Component<IPropImageShowInner, {}> {
+    protected elm: Element | undefined;
+    protected handleClick: (e: Event)=> void;
+    constructor(props: IPropImageShowInner) {
+        super(props);
+
+        this.handleClick = (e)=> {
+            const {
+                elm,
+            } = this;
+            if (elm != null) {
+                if (isFullscreen()) {
+                    exitFullscreen();
+                } else {
+                    requestFullscreen(elm);
+                }
+            }
+        };
+    }
     public render() {
         const {
             width,
@@ -51,7 +74,11 @@ class ImageShowInner extends Component<IPropImageShowInner, {}> {
             paddingRight: `${start}px`,
         };
 
-        return (<div className={style.wrapper} style={adhocStyle}>{
+        return (<div
+            ref={(elm)=> this.elm = elm}
+            className={style.wrapper}
+            style={adhocStyle}
+            onClick={this.handleClick}>{
             icons.map((box)=> {
                 const margin = (box.height * 0.1 * zoom).toFixed(1);
                 const styleobj = {

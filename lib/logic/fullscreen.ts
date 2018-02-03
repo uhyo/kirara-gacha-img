@@ -13,7 +13,6 @@ export function isFullscreen(): boolean {
  * Request fullscreen for given element.
  */
 export function requestFullscreen(elm: Element): void {
-    alert('req ' + elm.webkitRequestFullscreen);
     if (elm.requestFullscreen) {
         elm.requestFullscreen();
     } else if ((elm as any).mozRequestFullScreen) {

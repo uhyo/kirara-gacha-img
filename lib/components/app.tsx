@@ -35,11 +35,15 @@ interface IStateApp {
 export class App extends Component<{}, IStateApp> {
     constructor(props: {}) {
         super(props);
+
+        // initial zoom is decided by available size
+        const zoom =
+            document.documentElement.clientWidth < 600 ? 0.5 : 1;
         this.state = {
             icons: [],
             progress: 0,
             state: 'initial',
-            zoom: 1,
+            zoom,
         };
     }
     public render() {

@@ -26,10 +26,10 @@ export class ZoomSlider extends Component<IPropZoomSlider, {}> {
             <input
                 type='range'
                 className={style.slider}
-                value={String(v)}
                 step={1}
                 min={-2}
                 max={2}
+                value={String(v)}
                 onInput={(e)=>{
                     if (onChange != null) {
                         const val = Number((e.currentTarget as HTMLInputElement).value);

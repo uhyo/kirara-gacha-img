@@ -1,6 +1,7 @@
 .wrapper {
   width: 100%;
   flex: auto 1 0;
+  overflow-x: hidden;
 
   background-color: #aad7ff;
   padding-top: 30px;

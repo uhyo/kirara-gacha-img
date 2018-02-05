@@ -21,8 +21,12 @@ export async function download(canvas: HTMLCanvasElement): Promise<string | null
 
 function canvasToURL(canvas: HTMLCanvasElement): Promise<string> {
     if (canvas.toBlob != null) {
-        return new Promise((resolve)=> {
+        return new Promise((resolve, reject)=> {
             canvas.toBlob((blob)=> {
+                if (blob == null) {
+                    reject(new Error('Could not convert canvas to a Blob'));
+                    return;
+                }
                 const url = URL.createObjectURL(blob);
                 resolve(url);
             }, 'image/png');

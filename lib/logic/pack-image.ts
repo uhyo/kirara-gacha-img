@@ -28,6 +28,7 @@ export function packImage(icons: IIconImage[], width: number, zoom: number): Eve
         height,
         maxwidth,
         maxheight,
+        minareawidth,
         num,
         padding,
         start,
@@ -36,13 +37,23 @@ export function packImage(icons: IIconImage[], width: number, zoom: number): Eve
         width,
         zoom,
     });
+    console.log({
+        height,
+        maxwidth,
+        maxheight,
+        minareawidth,
+        num,
+        padding,
+        start,
+    });
+
     return new EventStream(async (emit, end, err)=> {
         // pixel ratio.
         const ratio = window.devicePixelRatio || 1;
 
         // prepare canvas.
         const canvas = document.createElement('canvas');
-        canvas.width = width * ratio;
+        canvas.width = minareawidth * ratio;
         canvas.height = height * ratio;
 
         const ctx = canvas.getContext('2d');
@@ -59,7 +70,7 @@ export function packImage(icons: IIconImage[], width: number, zoom: number): Eve
         let y = 0;
         let count = 0;
         for (const icon of icons) {
-            const dx = ratio * (start + (maxwidth + 2 * padding) * x);
+            const dx = ratio * (start + padding + (maxwidth + 2 * padding) * x);
             const dy = ratio * (padding + (maxheight + 2 * padding) * y);
 
             const img = await getImage(icon.url);
@@ -82,6 +93,7 @@ export function packImage(icons: IIconImage[], width: number, zoom: number): Eve
             type: 'end',
         });
         end();
+        console.log(canvas);
     });
 }
 

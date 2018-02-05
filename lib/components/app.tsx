@@ -103,30 +103,38 @@ export class App extends Component<{}, IStateApp> {
                 progress: 0,
                 state: 'saving',
             });
-            for await (const obj of stream) {
-                if (obj == null) {
-                    continue;
-                }
-                if (obj.type === 'progress') {
-                    this.setState({
-                        progress: obj.current / obj.max,
-                        state: 'saving',
-                    });
-                } else if (obj.type === 'end') {
-                    // download it.
-                    const url = await download(obj.canvas);
-                    if (url != null) {
+            try {
+                for await (const obj of stream) {
+                    if (obj == null) {
+                        continue;
+                    }
+                    if (obj.type === 'progress') {
                         this.setState({
-                            saveLink: url,
-                            state: 'result',
+                            progress: obj.current / obj.max,
+                            state: 'saving',
                         });
-                    } else {
-                        this.setState({
-                            saveLink: null,
-                            state: 'result',
-                        });
+                    } else if (obj.type === 'end') {
+                        // download it.
+                        const url = await download(obj.canvas);
+                        if (url != null) {
+                            this.setState({
+                                saveLink: url,
+                                state: 'result',
+                            });
+                        } else {
+                            this.setState({
+                                saveLink: null,
+                                state: 'result',
+                            });
+                        }
                     }
                 }
+            } catch (e) {
+                console.error(e);
+                this.setState({
+                    saveLink: null,
+                    state: 'result',
+                });
             }
         };
         const warningClose = ()=> {

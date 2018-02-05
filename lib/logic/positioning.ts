@@ -20,6 +20,10 @@ export interface IPositionInput {
 
 export interface IPositionResult {
     /**
+     * Required width of area.
+     */
+    minareawidth: number;
+    /**
      * Required height of area.
      */
     height: number;
@@ -65,7 +69,13 @@ export function position({
     // num * sizex + 2 * num * padding <= width.
     // num * (sizex + 2 * padding) <= width.
     // num <= width / (sizex + 2 * padding).
-    const num = Math.floor(width / (sizex + 2 * padding));
+    let num = Math.floor(width / (sizex + 2 * padding));
+    if (num <= 0) {
+        // width is 不足.
+        // extend required width.
+        num = 1;
+        width = sizex + 2 * padding;
+    }
 
     // width of icon area.
     const areaw = num * (sizex + 2 * padding);
@@ -81,6 +91,7 @@ export function position({
         height,
         maxheight: sizey,
         maxwidth: sizex,
+        minareawidth: width,
         num,
         padding,
         start: margin,

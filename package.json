@@ -58,6 +58,7 @@
   "scripts": {
     "prepublish": "nsp check",
     "precommit": "lint-staged",
+    "production-build": "NODE_ENV=production PUBLICPATH=/kirara-gacha-img/ gulp default",
     "test": "jest"
   },
   "lint-staged": {

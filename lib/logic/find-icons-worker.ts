@@ -194,7 +194,7 @@ function simplify(udlogs: IUdlog[]): IUdlog[] {
         } else {
             result.push({
                 ...obj,
-            })
+            });
         }
         lasty = obj.y;
     }

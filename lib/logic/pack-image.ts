@@ -39,8 +39,8 @@ export function packImage(icons: IIconImage[], width: number, zoom: number): Eve
     });
     console.log({
         height,
-        maxwidth,
         maxheight,
+        maxwidth,
         minareawidth,
         num,
         padding,

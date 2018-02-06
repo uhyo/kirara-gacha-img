@@ -7,16 +7,26 @@ import {
 const ctx: Worker = self as any;
 
 import {
-    bg,
+    isBG,
 } from './bg';
 
-// state of scanner.
+/**
+ * state of scanner.
+ */
 const enum State {
     Start,
     UpBorder,
     Gacha10_1,
     CenterMargin,
     Gacha1,
+}
+/**
+ * up and down log.
+ */
+interface IUdlog {
+    c: number;
+    d: number;
+    y: number;
 }
 
 ctx.onmessage = (e)=> {
@@ -33,16 +43,12 @@ ctx.onmessage = (e)=> {
 
     // index of buffer.
     let idx = 0;
-    // states.
-    let s = State.Start;
-    let y1: number | undefined;
-    let xs: number[] | undefined;
-    let y2: number | undefined;
-    let sizex: number | undefined;
-    let sizey: number | undefined;
+    // last bgcnt.
+    let last_bgcnt = 0;
+    let udlogs: IUdlog[] = [];
 
     // Scan each line.
-    wholeloop: for (let y = 0; y < height; y++) {
+    for (let y = 0; y < height; y++) {
         let bgcnt = 0;
         for (let x = 0; x < width; x++) {
             const red = data[idx];
@@ -55,84 +61,68 @@ ctx.onmessage = (e)=> {
             }
             idx += 4;
         }
-        // State transition
-        switch (s) {
-            case State.Start: {
-                if (bgcnt >= 650) {
-                    // Found a board.
-                    s = State.UpBorder;
-                }
-                break;
-            }
-            case State.UpBorder: {
-                if (80 <= bgcnt && bgcnt <= 150) {
-                    // Found a 10 gacha.
-                    // Start of first line.
-                    y1 = y - 1;
-                    s = State.Gacha10_1;
-
-                    // Get start position of each boxes.
-                    const linestart = 4 * width * (y+10);
-                    [xs, sizex] = detectX(data.subarray(linestart, linestart + 4 * width), width, 5);
-                } else if (bgcnt <= 640) {
-                    // Found a 1 gacha.
-                    y1 = y - 1;
-                    s = State.Gacha1;
-
-                    const linestart = 4 * width * (y+10);
-                    [xs, sizex] = detectX(data.subarray(linestart, linestart + 4 * width), width, 1);
-                }
-                break;
-            }
-            case State.Gacha10_1: {
-                if (bgcnt >= 650) {
-                    // End of gacha1.
-                    sizey = y - y1!;
-                    s = State.CenterMargin;
-                }
-                break;
-            }
-            case State.CenterMargin: {
-                if (80 <= bgcnt && bgcnt <= 150) {
-                    // Start of second line.
-                    y2 = y - 1;
-                    // Job is done!
-                    break wholeloop;
-                }
-                break;
-            }
-            case State.Gacha1: {
-                if (bgcnt >= 650) {
-                    sizey = y - y1!;
-                    break wholeloop;
-                }
-                break;
-            }
+        // レベル推移判定の閾値
+        const lsp = width / 15;
+        if (last_bgcnt + lsp < bgcnt) {
+            udlogs.push({
+                c: bgcnt,
+                d: 1,
+                y,
+            });
+        } else if (last_bgcnt - lsp > bgcnt) {
+            udlogs.push({
+                c: bgcnt,
+                d: -1,
+                y,
+            });
         }
+        last_bgcnt = bgcnt;
+        // State transition
     }
+    udlogs = simplify(udlogs);
 
+    console.log(JSON.stringify(udlogs));
     // End of scanning.
     const result: IIcon[] = [];
-    if (sizex != null && sizey != null) {
-        if (y1 != null && xs != null) {
-            for (const x of xs) {
-                result.push({
-                    height: sizey,
-                    width: sizex,
-                    x,
-                    y: y1,
-                });
-            }
+
+    // パターンを検出
+    if (matchPattern(udlogs, [1, -1, 1, -1, 1, -1])) {
+        // 10連ガチャ
+        const linestart = 4 * width * (udlogs[1].y + 20);
+        const [xs, sizex] = detectX(data.subarray(linestart, linestart + 4*width), width, 5);
+        const y1 = udlogs[1].y - 1;
+        const sizey1 = udlogs[2].y - y1;
+        for (const x of xs) {
+            result.push({
+                height: sizey1,
+                width: sizex,
+                x,
+                y: y1,
+            });
         }
-        if (y2 != null && xs != null) {
-            for (const x of xs) {
-                result.push({
-                    height: sizey,
-                    width: sizex,
-                    x,
-                    y: y2,
-                });
-            }
+        const y2 = udlogs[3].y - 1;
+        const sizey2 = udlogs[4].y - y2;
+        for (const x of xs) {
+            result.push({
+                height: sizey2,
+                width: sizex,
+                x,
+                y: y2,
+            });
+        }
+    } else if (matchPattern(udlogs, [1, -1, 1, -1])) {
+        // 単発ガチャ
+        const linestart = 4 * width * (udlogs[1].y + 20);
+        const [xs, sizex] = detectX(data.subarray(linestart, linestart + 4*width), width, 1);
+        const y1 = udlogs[1].y - 1;
+        const sizey1 = udlogs[2].y - y1;
+        for (const x of xs) {
+            result.push({
+                height: sizey1,
+                width: sizex,
+                x,
+                y: y1,
+            });
         }
     }
 
@@ -143,16 +133,6 @@ ctx.onmessage = (e)=> {
 
     ctx.postMessage(answer, [data.buffer]);
 };
-
-/**
- * Check whether this color is BG.
- */
-function isBG(red: number, green: number, blue: number): boolean {
-    const diff = Math.abs(red - bg.red) + Math.abs(green - bg.green) + Math.abs(blue - bg.blue);
-
-    // Firefox has weird rendering!
-    return diff < 10;
-}
 
 /**
  * Detect each box of gacha icon.
@@ -175,13 +155,8 @@ function detectX(data: Uint8ClampedArray, width: number, max: number): [number[]
         if (bgf) {
             // count continues background pixels.
             bgcont++;
-            if (bgcont === 1 && state === 1 && curx != null) {
-                // it's the end of the first box.
-                sizex = x - curx;
-                state = 2;
-            }
         } else {
-            if (bgcont >= 12) {
+            if (bgcont >= 9) {
                 // yes, it's after a true background region
                 if (result.length < max) {
                     result.push(x);
@@ -189,6 +164,9 @@ function detectX(data: Uint8ClampedArray, width: number, max: number): [number[]
                 if (state === 0) {
                     curx = x;
                     state = 1;
+                } else if (state === 1 && curx != null) {
+                    sizex = x - bgcont - curx;
+                    state = 2;
                 }
             }
             bgcont = 0;
@@ -200,4 +178,40 @@ function detectX(data: Uint8ClampedArray, width: number, max: number): [number[]
     } else {
         throw new Error('Something went wrong');
     }
+}
+
+/**
+ * simplify given uglods.
+ */
+function simplify(udlogs: IUdlog[]): IUdlog[] {
+    const result: IUdlog[] = [];
+    // 近いやつは無視する
+    let lasty = 0;
+    for (const obj of udlogs) {
+        if (obj.y - lasty <= 5) {
+            // 近いやつはあとを優先
+            result[result.length-1].y = obj.y;
+        } else {
+            result.push({
+                ...obj,
+            })
+        }
+        lasty = obj.y;
+    }
+    return result;
+}
+
+/**
+ * checks whether given Udlogs match given pattern.
+ */
+function matchPattern(udlogs: IUdlog[], pattern: number[]): boolean {
+    if (udlogs.length !== pattern.length) {
+        return false;
+    }
+    for (let i = 0; i < udlogs.length; i++) {
+        if (udlogs[i].d !== pattern[i]) {
+            return false;
+        }
+    }
+    return true;
 }
